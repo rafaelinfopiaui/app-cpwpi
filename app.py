@@ -5,7 +5,7 @@ import os
 import time
 from wordcloud import WordCloud, STOPWORDS
 import matplotlib
-matplotlib.use('Agg') # <-- INSTRUÇÃO MÁGICA: Define o modo não-interativo
+matplotlib.use('Agg') # Define o modo não-interativo
 import matplotlib.pyplot as plt
 import base64
 
@@ -36,7 +36,6 @@ st.markdown("""
     [data-testid="stProgressBar"] > div > div {
         background-image: linear-gradient(to right, #EC008C, #D1E038);
     }
-    /* Estilo para o container das logos */
     .logo-container {
         display: flex;
         justify-content: center; /* Alinha horizontalmente */
@@ -79,8 +78,6 @@ def carregar_dados():
             dados.columns = ['Timestamp', 'Comentário']
         return dados[['Comentário']]
     except Exception as e:
-        # Silencia o erro na UI para uma experiência mais limpa, mas loga no terminal
-        # st.error(f"Não foi possível carregar os dados da planilha. Verifique o link e as permissões de partilha. Erro: {e}")
         return pd.DataFrame(columns=['Comentário'])
 
 # --- 4. Páginas da Aplicação ---
@@ -89,7 +86,6 @@ st.sidebar.title("🚀 Navegação")
 pagina = st.sidebar.radio("Escolha uma página:", ["Dashboard ao Vivo", "Analisador Individual"])
 
 if pagina == "Dashboard ao Vivo":
-    
     if os.path.exists("banner_home-CPWeekendPiaui2-2.png"):
         st.image("banner_home-CPWeekendPiaui2-2.png")
 
@@ -112,10 +108,14 @@ if pagina == "Dashboard ao Vivo":
         with col1:
             st.subheader("Sentimento Geral")
             if not contagem_sentimentos.empty:
+                # --- MUDANÇA IMPORTANTE: Mapeamento de Cores ---
+                color_map = {'Positivo': '#28a745', 'Negativo': '#dc3545', 'Neutro': '#ffc107'}
+                labels = contagem_sentimentos.index
+                pie_colors = [color_map.get(label, '#808080') for label in labels]
+
                 fig, ax = plt.subplots()
-                # Define a cor de fundo da figura como transparente
                 fig.patch.set_alpha(0.0)
-                ax.pie(contagem_sentimentos, labels=contagem_sentimentos.index, autopct='%1.1f%%', startangle=90, colors=['#D1E038', '#ff4b4b', '#ffc107'], textprops={'color':"w"})
+                ax.pie(contagem_sentimentos, labels=labels, autopct='%1.1f%%', startangle=90, colors=pie_colors, textprops={'color':"w"})
                 ax.axis('equal')
                 st.pyplot(fig)
 
@@ -127,7 +127,6 @@ if pagina == "Dashboard ao Vivo":
                 stopwords_pt.update(["pra", "pro", "tá", "né", "da", "de", "do", "na", "no", "uma", "um", "que", "se", "por"])
                 wordcloud = WordCloud(stopwords=stopwords_pt, background_color=None, mode="RGBA", colormap="viridis", width=800, height=400).generate(texto_completo)
                 fig_wc, ax_wc = plt.subplots()
-                # Define a cor de fundo da figura como transparente
                 fig_wc.patch.set_alpha(0.0)
                 ax_wc.imshow(wordcloud, interpolation='bilinear')
                 ax_wc.axis("off")
@@ -139,9 +138,6 @@ if pagina == "Dashboard ao Vivo":
 
 
 elif pagina == "Analisador Individual":
-    # --- CABEÇALHO COM AS LOGOS ---
-    st.write("") # Adiciona um espaço vertical no topo
-
     unicet_logo = get_image_as_base64("unicet_white.png")
     cp_logo = get_image_as_base64("CPWeekend_Piaui.png")
     engcia_logo = get_image_as_base64("ENG-CIA logo.png")
@@ -174,14 +170,15 @@ elif pagina == "Analisador Individual":
 
         st.markdown("---")
         st.write("### Resultado da Análise:")
-        cor_sentimento = "#D1E038" if sentimento == "Positivo" else "#ff4b4b" if sentimento == "Negativo" else "#ffc107"
-        st.markdown(f"**Sentimento Identificado:** <span style='color:{cor_sentimento}; font-weight: bold;'>{sentimento}</span>", unsafe_allow_html=True)
+        # --- MUDANÇA IMPORTANTE: Cores alinhadas ---
+        cor_sentimento = "#28a745" if sentimento == "Positivo" else "#dc3545" if sentimento == "Negativo" else "#ffc107"
+        st.markdown(f"*Sentimento Identificado:* <span style='color:{cor_sentimento}; font-weight: bold;'>{sentimento}</span>", unsafe_allow_html=True)
         st.progress(float(confianca), text=f"Confiança: {confianca:.1%}")
 
         with st.expander("Ver Plano de Ação Sugerido", expanded=True):
-            if sentimento == "Positivo": st.markdown("- **Prioridade:** Baixa\n- **Recomendações:** Agradecer o feedback.")
-            elif sentimento == "Negativo": st.markdown("- **Prioridade:** Alta\n- **Recomendações:** Contacto urgente, analisar causa raiz.")
-            else: st.markdown("- **Prioridade:** Média\n- **Recomendações:** Monitorizar a conversa.")
+            if sentimento == "Positivo": st.markdown("- *Prioridade:* Baixa\n- *Recomendações:* Agradecer o feedback.")
+            elif sentimento == "Negativo": st.markdown("- *Prioridade:* Alta\n- *Recomendações:* Contacto urgente, analisar causa raiz.")
+            else: st.markdown("- *Prioridade:* Média\n- *Recomendações:* Monitorizar a conversa.")
 
 # --- 5. Barra Lateral ---
 st.sidebar.markdown("---")
@@ -189,6 +186,6 @@ st.sidebar.success("Modelo de Demonstração Ativo!")
 #st.sidebar.info("Este é um projeto educacional desenvolvido para fins de demonstração.")
 
 st.sidebar.markdown("### Sobre o Projeto")
-st.sidebar.markdown(f"**Desenvolvimento:** Equipe do Projeto de Extensão do Curso de Bacharelado em Engenharia de Computação com IA do Centro Universitário Tecnológico de Teresina - UNI-CET")
-st.sidebar.markdown("\n### Equipe de Desenvolvimento\n- Rafael Oliveira \n- Ailton Medeiros \n- Lais Eulálio \n- Antônio Wilker \n- Isaac Aragão \n- Paula Iranda")
-st.sidebar.markdown("\n### Docente Orientador \n- Prof. Dr. Artur Felipe da Silva Veloso")
+st.sidebar.markdown(f"*Desenvolvimento:* Equipe do Projeto de Extensão do Curso de Bacharelado em Engenharia de Computação da UNICET, com o objetivo de aplicar as técnica de Deep Learning e Machine Learning para análise de sentimentos.")
+st.sidebar.markdown("\n### Equipe de Desenvolvimento \n- Rafael Oliveira \n- Ailton Medeiros \n- Laís Eulálio \n- Antônio Wilker \n- Isaac Bruno \n- Paula Iranda")
+st.sidebar.markdown("\n### Docente Orientador \n- Prof. Dr. Artur Felipe da Silva Veloso")
